@@ -1,0 +1,97 @@
+#!/bin/bash
+
+#client_setup.sh
+#Tyler Spurrell
+#Started June 3rd
+#Finished June 4th
+#The purpose of this script is to read and validate each username, create a directory structure and count how many clients were processed successfully versus rejected
+
+#Variables needed for the script
+client_file=~/clients.txt
+base_dir="$HOME"
+valid_count=0
+invalid_count=0
+
+#if statement checks if client.txt exists
+if [ -f $client_file ]
+    then
+    echo "$client_file exists."
+    else
+    echo "$client_file does not exist, please create one and include the required usernames."
+    exit
+fi
+
+#if statement checks if /$HOME exists (/home/"username" is used to ensure the paths stay relative and work on any machine.)
+if [ -d $base_dir ]
+    then
+    echo "$base_dir exists, proceeding with the rest of the script."
+    else
+    echo "$base_dir does not exist, please ensure that $base_dir exists before running the script again."
+    exit
+fi
+
+#While loop to handle a if and nested if
+while IFS= read -r client
+do
+#The main if statement checks to confirm that the client username meets the minimum requirements for username creation
+    if [[ ${#client} -ge 3 && ${#client} -le 16 && $client =~ ^[a-z]+$ ]]
+        then 
+        echo "[SUCCESS]: Username accepted: $client"
+        echo "Processing client: $client"
+            #Checks if $base_dir/$client exists, if it doesn't one will be made
+            if [ -d $base_dir/$client ]
+                then
+                echo "[SKIPPED] $base_dir/$client already exists."
+                else
+                mkdir -p "$base_dir/$client"
+                echo "[CREATED] $base_dir/$client"
+            fi
+
+            #Checks if $base_dir/$client/public.html, if it doesn't one will be made
+            if [ -d $base_dir/$client/public.html ]
+                then
+                echo "[SKIPPED] $base_dir/$client/public.html already exists."
+                else
+                mkdir -p "$base_dir/$client/public.html"
+                echo "[CREATED] $base_dir/$client/public.html"
+            fi
+
+            #Checks if $base_dir/$client/logs, if it doesn't one will be made
+            if [ -d $base_dir/$client/logs ]
+                then
+                echo "[SKIPPED] $base_dir/$client/logs already exists."
+                else
+                mkdir -p "$base_dir/$client/logs"
+                echo "[CREATED] $base_dir/$client/logs"
+            fi
+
+            #Checks if $base_dir/$client/backups, if it doesn't one will be made
+            if [ -d $base_dir/$client/backups ]
+                then
+                echo "[SKIPPED] $base_dir/$client/backups already exists."
+                else
+                mkdir -p "$base_dir/$client/backups"
+                echo "[CREATED] $base_dir/$client/backups"
+            fi
+
+            #Checks if $base_dir/$client/tmp exists, if it doesn't one will be made
+            if [ -d $base_dir/$client/tmp ]
+                then
+                echo "[SKIPPED] $base_dir/$client/tmp"
+                else
+                mkdir -p "$base_dir/$client/tmp"
+                echo "[CREATED] $base_dir/$client/tmp"
+            fi
+        #Adds one to the $valid count variable
+        (( valid_count++ ))
+         else
+         #Adds one to the $invalid count variable
+        echo "[WARN]: Skipping invalid username: $client"
+        (( invalid_count++ ))
+    fi
+done < $client_file
+
+#Final output of the valid and invalid entries
+echo "Total entries read: $((valid_count + invalid_count))"
+echo "Valid entries setup: $valid_count"
+echo "Invalid entries: $invalid_count"
