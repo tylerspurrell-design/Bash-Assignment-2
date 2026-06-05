@@ -1,0 +1,56 @@
+#!/bin/bash
+
+#onboard_report
+#Tyler Spurrell
+#Started June 4th
+#Finished June 5th
+#The purpose of this script is to generate a formatted plain-text report of the current state of the client data directory
+
+#Variables used for the script
+base_dir="$HOME/client"
+report_dir="$HOME/onboarding/onboarding_reports"
+report_file="$HOME/onboarding/onboarding_reports/report_$(date +"%T%F").txt"
+client_count=0
+
+#if statement to verify that the report directory exists and if it doesn't, one is created
+if [ -d "$HOME/onboarding/onboarding_reports" ]
+    then
+    echo "$report_dir exists, proceeding with the onboarding report"
+    else
+    echo "$report_dir does not exist, creating it now"
+    mkdir -p "$HOME/onboarding/onboarding_reports"
+fi
+
+#echo that is sent to the report file and is used as a header
+echo "===============================================
+Northgate Hosting Solutions - Onboarding Report
+Generated: $(date +"%T %F")
+===============================================" > $report_file
+
+
+#for loop that runs through the directories and generates a report
+for client_dir in "$base_dir"/*
+do
+    [ -d "$client_dir" ] || continue
+
+    #Variables used for the report file
+    client_name=$(basename "$client_dir")
+    sub_directory_count=$(find "$client_dir" -type d | wc -l)
+    total_kb=$(du -sk "$client_dir" | cut -f1)
+
+
+echo "Client: $client_name | Subdirectories: $sub_directory_count | Disk used: $total_kb KB" >> "$report_file"
+((client_count++))
+done
+
+#Report file footer
+echo "===============================================
+$client_count clinets were processed.
+===============================================" >> $report_file
+
+#Summary that's displayed in the terminal
+echo "===============================================
+Report generation complete.
+Clients included : $client_count
+Report saved to : $report_file
+==============================================="
